@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="nebula">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <title>ViViVi Mobile • INFODOSE</title>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#2563eb">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('Service Worker Registered'));
+  }
+</script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+  /* =========================================================
+     MOBILE CORE: 356px Vertical Stack
+     ========================================================= */
+
+  :root{
+    --bg:#0b0d12; --text:#e9eef7; --muted:#9aa3b2;
+    --grad-a:#a855f7; --grad-b:#22d3ee; --accent:#39FFB6;
+    --radius:16px; --radius-lg:20px;
+    --glass:rgba(255,255,255,.06); --glass-2:rgba(255,255,255,.09);
+    --shadow:0 8px 24px rgba(0,0,0,.45);
+    --blur:16px;
+    --font-sans: 'Montserrat', sans-serif;
+    --font-code: 'JetBrains Mono', monospace;
+    --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  html[data-theme="nebula"]{--bg:#0b0d12;--text:#e9eef7;--muted:#9aa3b2;--grad-a:#a855f7;--grad-b:#22d3ee;--accent:#39FFB6}
+  html[data-theme="matrix"]{--bg:#050a05;--text:#e9fce7;--muted:#8bc391;--grad-a:#34d399;--grad-b:#059669;--accent:#34d399}
+  html[data-theme="cyberpunk"]{--bg:#0a0810;--text:#f6eefe;--muted:#caa8ff;--grad-a:#ff0099;--grad-b:#00d1ff;--accent:#ff0099}
+
+  *{box-sizing:border-box;margin:0;padding:0; outline:none; -webkit-tap-highlight-color: transparent;}
+  
+  body{
+    min-height:100vh; background:var(--bg); color:var(--text); font-family:var(--font-sans);
+    display:flex; flex-direction: column; align-items:center;
+    padding:16px 0; /* Vertical padding only */
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(255,255,255,0.07) 0%, transparent 45%),
+      linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 100%);
+    overflow-x: hidden;
+  }
+
+  /* MOBILE CONTAINER CONSTRAINT */
+  .container {
+    width: 100%;
+    max-width: 356px; /* TRAVADO EM 356PX */
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 8px; /* Safe margin */
+  }
+
+  /* Common Components */
+  .glass-panel{background:var(--glass); border-radius:var(--radius); padding:14px; border:1px solid rgba(255,255,255,.05); box-shadow:var(--shadow); backdrop-filter:blur(var(--blur))}
+  .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;background:var(--glass-2); color:var(--text); font-weight:700; font-family:var(--font-sans); font-size: 0.85rem; transition: transform .1s}
+  .btn:active{transform:scale(0.96)}
+  .btn-primary{background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); color:#0b0d12; box-shadow: 0 4px 12px rgba(0,0,0,0.2)}
+  .btn.small{padding:6px 10px; font-size:.75rem}
+  
+  .muted{color:var(--muted);font-size:.8rem}
+  .hr{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:12px 0;border-radius:2px}
+
+  /* Topbar Mobile */
+  .topbar{display:flex; flex-direction:column; gap:12px;}
+  .brand{display:flex; align-items:center; gap:10px}
+  .dot{width:12px;height:12px;border-radius:50%; flex-shrink:0; background:radial-gradient(circle at 30% 30%,#fff 0,var(--grad-a) 40%,var(--grad-b) 100%)}
+  
+  .top-actions{display:grid; grid-template-columns: 1fr 1fr; gap:8px}
+  .theme{grid-column: 1/-1; width:100%; padding:10px; border-radius:10px; background:var(--glass-2); color:var(--text); border:1px solid rgba(255,255,255,.05); -webkit-appearance: none;}
+
+  /* Modules & Stack */
+  .nexus-header{display:flex; justify-content:space-between; align-items:center; cursor:pointer}
+  .nexus-title{font-family:Orbitron, sans-serif; font-weight:700; letter-spacing:0.5px; font-size: 0.95rem}
+  
+  .module-row{display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:10px; background:rgba(255,255,255,0.02); margin-bottom: 6px}
+  .toggle { position:relative; width:40px; height:20px; background:rgba(255,255,255,0.1); border-radius:20px; }
+  .toggle input{display:none}
+  .toggle .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .25s var(--ease)}
+  .toggle input:checked + .knob{left:22px; background:var(--accent)}
+
+  .card { overflow:hidden; transition: all .3s }
+  .accordion-content { max-height:0; overflow:hidden; opacity:0; transition: all .4s var(--ease) }
+  .card.open .accordion-content { opacity:1; max-height:800px; padding-top:10px }
+  .card-arrow{transition:transform .3s; font-size: 0.8rem; color:var(--muted)}
+
+  /* Inputs Mobile */
+  input, textarea, select { font-family: var(--font-code); font-size: 0.85rem; }
+  .input-field{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,.1);color:var(--text);padding:12px;border-radius:10px}
+
+  /* Grid Icons Mobile (3 cols) */
+  .icon-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+  .icon-cell{padding:10px 6px; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; background:rgba(255,255,255,0.025); gap:6px}
+  .icon svg{width:24px;height:24px}
+
+  /* User Card Dual Mobile */
+  .user-card { background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.2)); border:1px solid rgba(255,255,255,0.08); padding:16px;}
+  .uc-header{display:flex; gap:10px; align-items:center}
+  .uno-loader-uc { width:48px; height:48px; flex-shrink:0; position:relative }
+  .uno-loader-uc .ring{position:absolute;inset:0;border-radius:50%; background:conic-gradient(from 90deg,var(--grad-a),var(--grad-b)); -webkit-mask:radial-gradient(farthest-side,transparent calc(50% - 1.5px), #000 calc(50% - 1.5px)); animation:spin 4s linear infinite}
+  .uno-loader-uc .core{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60%; height:2px; background:#fff; border-radius:4px; opacity:0.8; animation: pulse 2s ease-in-out infinite}
+  
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{opacity:0.5; width:40%} 50%{opacity:1; width:70%}}
+
+  /* Loaders Mini */
+  .loaders-row { display:flex; justify-content:space-around; align-items:flex-end; padding: 10px 0; }
+  .loader-mini { width:24px; height:24px; border:2px solid var(--muted); border-top-color:var(--accent); border-radius:50%; animation:spin 1s infinite linear}
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <header class="topbar glass-panel">
+      <div class="brand">
+        <div class="dot"></div>
+        <div style="flex:1">
+          <div style="font-weight:800; font-size:0.95rem; letter-spacing:.5px">INFODOSE • Mobile</div>
+          <div style="font-size:.75rem; color:var(--muted)">Unified Core v.Mobile</div>
+        </div>
+      </div>
+      
+      <div class="top-actions">
+        <select id="themeSel" class="theme">
+          <option value="nebula">Theme: Nebula</option>
+          <option value="matrix">Theme: Matrix</option>
+          <option value="cyberpunk">Theme: Cyberpunk</option>
+        </select>
+        <button id="copyBtn" class="btn">Copiar CSS</button>
+        <button id="btnLoad" class="btn btn-primary">Gerar</button>
+      </div>
+    </header>
+
+    <section id="nexus-core" class="glass-panel card open">
+      <div class="nexus-header" onclick="app.toggleCard('nexus-core')">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--grad-a),var(--grad-b));display:grid;place-items:center;color:#000">
+            <i class="fa-solid fa-cube"></i>
+          </div>
+          <div>
+            <div class="nexus-title">NEXUS CORE</div>
+            <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-code)">SYSTEM MANAGER</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-down card-arrow" id="nexusArrow"></i>
+      </div>
+
+      <div class="accordion-content">
+        <div class="hr"></div>
+        <div style="display:flex; gap:6px; margin-bottom:12px">
+          <button onclick="app.switchTab('modules')" class="btn small" style="flex:1">Módulos</button>
+          <button onclick="app.switchTab('injector')" class="btn small" style="flex:1; background:transparent; border:1px solid rgba(255,255,255,.1)">Inject</button>
+        </div>
+
+        <div id="view-modules">
+          <label class="module-row">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-fingerprint" style="color:var(--grad-a)"></i>
+              <div><div style="font-weight:700;font-size:.85rem">Personalização</div></div>
+            </div>
+            <div class="toggle"><input id="toggle-oracle" type="checkbox" checked onchange="app.toggleModule('oracle')"><span class="knob"></span></div>
+          </label>
+          <label class="module-row">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-box-archive" style="color:var(--grad-b)"></i>
+              <div><div style="font-weight:700;font-size:.85rem">Vault UNO</div></div>
+            </div>
+            <div class="toggle"><input id="toggle-vault" type="checkbox" onchange="app.toggleModule('vault')"><span class="knob"></span></div>
+          </label>
+        </div>
+
+        <div id="view-injector" class="hidden" style="display:none">
+          <input id="inject-title" class="input-field" placeholder="Nome do Card" style="margin-bottom:8px; padding:8px">
+          <textarea id="inject-code" class="input-field" placeholder="HTML..." style="height:60px;margin-bottom:8px;font-family:var(--font-code)"></textarea>
+          <button onclick="app.injectCard()" class="btn" style="width:100%">Compilar</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="stack-stream" style="display:flex; flex-direction:column; gap:12px">
+      
+      <article id="card-oracle" class="glass-panel card">
+        <div style="display:flex;justify-content:space-between;align-items:center" onclick="app.toggleCard('card-oracle')">
+          <div style="display:flex;gap:10px;align-items:center">
+            <i class="fa-solid fa-fingerprint" style="color:var(--grad-a); font-size:1.2rem"></i>
+            <div><div style="font-weight:800; font-size:.9rem">Sintonização</div></div>
+          </div>
+          <i class="fa-solid fa-chevron-down card-arrow"></i>
+        </div>
+        <div class="accordion-content">
+          <div class="hr"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+            <button class="btn small" onclick="app.setIntention('FOCO')">FOCO</button>
+            <button class="btn small" onclick="app.setIntention('ENERGIA')">ENERGIA</button>
+          </div>
+        </div>
+      </article>
+
+      <article id="card-vault" class="glass-panel card hidden" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center" onclick="app.toggleCard('card-vault')">
+          <div style="display:flex;gap:10px;align-items:center">
+             <i class="fa-solid fa-box-archive" style="color:var(--grad-b); font-size:1.2rem"></i>
+             <div><div style="font-weight:800; font-size:.9rem">Vault UNO</div></div>
+          </div>
+          <i class="fa-solid fa-chevron-down card-arrow"></i>
+        </div>
+        <div class="accordion-content">
+          <div class="hr"></div>
+          <p class="muted" style="text-align:center">Nenhum script local.</p>
+        </div>
+      </article>
+
+    </div>
+
+    <section class="glass-panel card">
+      <h4 style="font-size:0.9rem; margin-bottom:8px">Arquétipos & Loaders</h4>
+      <div class="hr"></div>
+      
+      <div id="iconGrid" class="icon-grid">
+        </div>
+
+      <div class="loaders-row">
+        <div class="loader-mini"></div>
+        <div style="font-family:var(--font-code); font-size:0.7rem; color:var(--muted)">SYSTEM READY</div>
+      </div>
+    </section>
+
+    <section class="glass-panel user-card" id="userCard">
+      <div class="uc-header" id="cardHeader" onclick="toggleUserCard()">
+        <div class="uno-loader-uc"><div class="ring"></div><div class="core"></div></div>
+        <div style="flex:1; overflow:hidden">
+          <div class="uc-name" id="displayName" style="font-weight:800; font-size:1.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">Visitante</div>
+          <div class="muted" style="font-size:.7rem">OPERADOR MOBILE</div>
+        </div>
+        <div id="clock" style="font-family:var(--font-code); font-size:0.75rem; background:rgba(0,0,0,0.3); padding:4px 6px; border-radius:6px">00:00</div>
+      </div>
+
+      <div id="ucBody" style="margin-top:14px; display:none">
+        <input id="nameInput" class="input-field" placeholder="Identidade..." autocomplete="off">
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px">
+          <button class="btn small" onclick="toggleUserCard(false)">Fechar</button>
+          <button class="btn small btn-primary" id="saveBtn">Salvar</button>
+        </div>
+
+        <div style="margin-top:12px; padding:10px; background:rgba(0,0,0,0.3); border-radius:8px; border:1px dashed rgba(255,255,255,.1)">
+          <div class="muted" style="font-size:0.7rem; margin-bottom:4px">STATUS: CONECTADO</div>
+          <pre id="asciiText" style="font-family:var(--font-code); font-size:0.65rem; color:var(--grad-b); white-space:pre-wrap; overflow:hidden">// HASH: A7X-01
+>> User: Verified</pre>
+          <div style="display:flex; gap:8px; margin-top:8px">
+            <button class="btn small" style="flex:1" onclick="copyAscii()">Copiar</button>
+            <button class="btn small" style="flex:1" onclick="downloadPng()">PNG</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer style="text-align:center; padding:10px; color:var(--muted); font-size:0.75rem; opacity:0.6">
+      KODUX • 356px Core
+    </footer>
+
+  </div>
+
+  <svg style="position:absolute;width:0;height:0;" aria-hidden="true">
+    <defs>
+      <linearGradient id="grad-arq" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="var(--grad-a)"></stop>
+        <stop offset="100%" stop-color="var(--grad-b)"></stop>
+      </linearGradient>
+    </defs>
+    <symbol id="ico-inocente" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="url(#grad-arq)" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="url(#grad-arq)"/></symbol>
+    <symbol id="ico-explorador" viewBox="0 0 24 24"><path d="M12 2l4 10 6 2-10 4-2 6-2-6-10-4 6-2z" fill="none" stroke="url(#grad-arq)" stroke-width="2"/></symbol>
+    <symbol id="ico-mago" viewBox="0 0 24 24"><path d="M11 2l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="url(#grad-arq)"/></symbol>
+    </svg>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <script>
+  // === MOBILE APP LOGIC ===
+  const themeSel = document.getElementById('themeSel');
+  themeSel.addEventListener('change', ()=> document.documentElement.setAttribute('data-theme', themeSel.value));
+
+  // Icons Loader (Simplified for mobile grid)
+  const iconsData = ['Inocente','Explorador','Sábio','Herói','Rebelde','Amante','Criador','Bobo','Governante','Cuidador','Mago','Órfão'];
+  const grid = document.getElementById('iconGrid');
+  // Usando um icon genérico para demonstração leve, mas IDs funcionam se SVG estiver completo
+  iconsData.forEach((name, i)=>{
+    const cell = document.createElement('div');
+    cell.className = 'icon-cell';
+    // Alternate icons for visual var
+    const icoId = i%2===0 ? 'ico-inocente' : (i%3===0 ? 'ico-mago' : 'ico-explorador');
+    cell.innerHTML = `<svg class="icon"><use href="#${icoId}"></use></svg><div style="font-size:.65rem;color:var(--muted)">${name}</div>`;
+    grid.appendChild(cell);
+  });
+
+  const app = {
+    toggleCard(id) {
+      const card = document.getElementById(id);
+      if(card) {
+        card.classList.toggle('open');
+        const arrow = card.querySelector('.card-arrow');
+        if(arrow) arrow.style.transform = card.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0)';
+      }
+    },
+    switchTab(tab) {
+      document.getElementById('view-modules').style.display = tab==='modules'?'block':'none';
+      document.getElementById('view-injector').style.display = tab==='injector'?'block':'none';
+    },
+    toggleModule(mod) {
+      const el = document.getElementById('card-'+mod);
+      const chk = document.getElementById('toggle-'+mod);
+      if(el && chk) el.style.display = chk.checked ? 'block' : 'none';
+    },
+    injectCard() {
+      const t = document.getElementById('inject-title').value || 'Novo Card';
+      const c = document.getElementById('inject-code').value || '...';
+      const div = document.createElement('article');
+      div.className = 'glass-panel card open';
+      div.style.marginTop='12px';
+      div.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:.9rem">${t}</strong><button class="btn small" onclick="this.closest('article').remove()">X</button></div><div class="accordion-content" style="opacity:1;max-height:auto;padding-top:8px;font-size:.85rem">${c}</div>`;
+      document.getElementById('stack-stream').prepend(div);
+      showToast('Card Injetado');
+    },
+    setIntention(i) { showToast(`Intenção: ${i}`); }
+  };
+
+  function showToast(msg) {
+    let t = document.getElementById('tst');
+    if(!t){ t=document.createElement('div'); t.id='tst'; Object.assign(t.style,{position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',background:'#fff',color:'#000',padding:'8px 16px',borderRadius:'20px',fontWeight:'bold',fontSize:'.8rem',zIndex:999,opacity:0,transition:'opacity .3s'}); document.body.appendChild(t); }
+    t.innerText=msg; t.style.opacity=1; setTimeout(()=>t.style.opacity=0, 2000);
+  }
+
+  // User Card Logic
+  let userState = { name: 'Visitante', open: false };
+  function toggleUserCard(force) {
+    const body = document.getElementById('ucBody');
+    userState.open = force !== undefined ? force : !userState.open;
+    body.style.display = userState.open ? 'block' : 'none';
+  }
+  
+  // Init
+  setInterval(()=> document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), 1000);
+  document.getElementById('nameInput').addEventListener('input', (e)=>{
+    document.getElementById('displayName').innerText = e.target.value || 'Visitante';
+    document.getElementById('asciiText').innerText = `// USER: ${(e.target.value||'VISITANTE').toUpperCase()}\n>> KEY: ${Date.now().toString().slice(-4)}`;
+  });
+
+  window.app = app;
+  window.toggleUserCard = toggleUserCard;
+  window.copyAscii = ()=> { navigator.clipboard.writeText(document.getElementById('asciiText').innerText); showToast('Copiado'); };
+  window.downloadPng = ()=> { 
+    showToast('Gerando PNG...');
+    html2canvas(document.getElementById('userCard'), {backgroundColor:null, scale:2}).then(c => {
+      const a = document.createElement('a'); a.download='card.png'; a.href=c.toDataURL(); a.click();
+    });
+  };
+  </script>
+</body>
+</html>
